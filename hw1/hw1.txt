@@ -1,0 +1,25 @@
+1. subset a b: It was natural to me to find the set difference of a and b to find if there are any elements 
+of a not in b; elements in a that satisfy the filter predicate that they do not exist in b are in the resulting
+list. If this list is not empty (meaning some elements in a do not exist in b), a is not a subset of b. 
+
+2. equal_sets a b: An idea of set theory is that a and b are equal if they are subsets of one another.
+
+3. set_union a b: Since the lists that represent sets can contain duplicates, it was most simple to 
+use @ (list concatenation). By not removing duplicates, this function chooses simplicity and is faster
+because it does not remove duplicates, but it may return lists that are longer than they need to be.
+
+4. set_all_union a: I used the fold_left function (like the reduce function in Python); the predicate 
+used is set_union. It takes the union of the empty set and first set of a, then of that set and the next set, 
+and so on taking unions of the partial elements. Because set_union is used, it has the same strength and weakness.
+
+5. set_member s: Not solvable due to homogeneous lists. A set that contains itself must be heterogeneous; it
+has elements of type a' and an element of type a' list (itself).
+
+6. computed_fixed_point eq f x: Based on the definition - x, f x, f (f x), ... - recusion is obvious.
+
+7. fliter_reachable g: I recurisvely find reachable nonterminals level by level. The first level is the reachable 
+symbols from the start symbol, the next is the reachable symbols from the previous level's unchecked reachable symbols 
+(to stop from any possible circular reachability), and so on. The functions find reachable symbols from one symbol
+and from a list of symbols to find the final list of reachable nonterminals, parsed by symbol in the grammar rules to
+find all reachable rules. I chose this approach because recursion while ensuring you only consider the reachability 
+of symbols that you have not previously reached is most natural.

@@ -1,0 +1,87 @@
+make_matcher: The discussion section material emphasized using partial
+application of functions and mutual recursion, and so my matcher uses two 
+mutually recursive functions, one of which uses partial application in its
+acceptor. The matcher function takes the grammar, the acceptor, and the 
+fragment, and calls the parse_rules function which takes the acceptor, the 
+fragment, the production function of the rules, and the alternative list of
+the start symbol. 
+    parse_rules goes through rules of the given nonterminal symbol, checking
+if the fragment can be matched by the current rule and any of its derivations
+based on the acceptor. If so, the suffix that immediately follows the matched
+prefix is returned. If not, parse_rules moves on to the next rule in the 
+alternative list of the given nonterminal, and if there are no more remaining
+rules to check, there is no match, so None is returned. 
+    Importantly, parse_rules calls match_fragment with the production
+function, current rule, acceptor, and fragment, and matches what is returned
+by match_fragment. match_fragment is the function that tries to match the 
+fragment with the current rule and any of its derivations based on the 
+acceptor by recursively calling itself and parse_rules. If the current rule 
+is empty, then it accepts the fragment with whatever the acceptor is. If the 
+current symbol in the current rule is a terminal, then match_fragment tries 
+to match the fragment. 
+    If the fragment is empty, then None is returned. If the terminal symbol 
+matches the current fragment's current terminal, match_fragment attempts to 
+the match the rest of the fragment using a new acceptor. This new acceptor
+takes inspiration from the hint code's append_matchers function, where the 
+second matcher acts as the acceptor for the first matcher. Likewise, the new
+acceptor is match_fragment on the tail of the rules (in this new acceptor, 
+match_fragment is also given the production function and the acceptor). 
+Partial application is also used here; match_fragment takes the fragment as 
+its last argument, as do acceptors, so to act as an acceptor, the fragment is
+not passed in as an argument; it is the argument of the new acceptor. Then, 
+match_fragment just returns what the new acceptor returns for the fragment 
+(just as how in the empty case, match_fragment returns what the acceptor
+returns when given the fragment).
+    If the current symbol in the current rule is a nonterminal symbol, the
+new acceptor is made in the same way (the acceptor is match_fragment given
+the production function, tail of the rules, and the acceptor). However, 
+instead of using the new acceptor to immediately accept the fragment, 
+match_fragment must parse the rules from this nonterminal by using 
+parse_rules and passing in the new acceptor as the acceptor.
+    I used this approach for its simplicity, as at the top level, it makes
+complete sense. A matcher must parse the rules from the start symbol and try
+to match the fragment to one of these rules. If the current symbol in the 
+rule is a terminal symbol, then the matcher should try to match a prefix 
+of this fragment with the terminal symbol using an acceptor on the fragment, 
+and this acceptor should be the matcher on the rest of the fragment and 
+rules. If the current symbol is a nonterminal, then the matcher should parse 
+the rules from this nonterminal, again using the matcher on the rest of the
+fragment and rules as the acceptor. parse_rules finds derivations from each
+nonterminal symbol it passes, by using the match_fragment function to accept
+the fragment using itself as the acceptor.
+    The weakness with my matcher is that it cannot handle left-recursive
+grammars. The matcher parses fragments left to right, so if there is a rule
+for a nontermianl where the same nonterminal is on the left, the matcher
+will get stuck in an infinite loop repeatedly trying to parse the rules
+from the nonterminal. For example, say a grammar has the following rules
+for a nonterminal B. B, [T "ok"] | [N B; T "pls"; N C]. 
+The matcher will only be able to match a fragment that starts with "ok" 
+(if there is a fragment that is dervied from the second rule for B, the 
+matcher will fail to match it).
+
+make_parser: make_parser uses a very slightly modified make_matcher; it uses 
+the same exact matcher except it returns the full derivation of the fragment
+along with the suffix by using an acceptor that accepts all derivation-string
+pairs and by having another arugment that holds the full derivation as a 
+list. Then, a parse tree is made from this derivation. A parse tree is only 
+made if there is a derivation list and the matcher returns an empty suffix;
+in any other case (the matcher returns None, an empty derivation list, or a
+nonempty derivation but a nonempty suffix, meaning that the full fragment 
+was not matched), a parse tree is not made, as instructed by the spec.
+    I used the matcher to make my parser because to make a parse tree, the 
+parser simply needs the full derivation of the fragment, which the modified
+matcher returns, along with the suffix after the matched prefix.
+    The weakness with the parser is that since it uses basically the same 
+matcher, it will match the first available fragment (not necessarily the
+longest match). This is a weakness in the case that the full fragment can 
+be matched, but a shorter prefix of the fragment was matched first, so a
+nonempty suffix is returned, which means a parse tree is not made even 
+for a fragment that can be matched completely. Instead of returning the 
+parse tree for the matched prefix (which I would think is the right thing to
+do), make_parser returns None (since the spec says a parse tree should only
+be made if the fragment can be parsed entirely from beginning to end).
+    This is not a weakness of the matcher since the matcher is supposed to
+match the fragment to the first available prefix (instead of the longest 
+possible match), but this is a weakness for the parser since the parser may
+return None even in the case where the full fragment can be matched, because
+the matcher it uses always tries to match the first possible prefix.
