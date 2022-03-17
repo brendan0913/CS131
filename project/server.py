@@ -12,7 +12,7 @@ CONNECTIONS = {
     'Bernard': ['Jaquez', 'Juzang', 'Campbell']
 }
 HOSTNAME = '127.0.0.1'
-KEY = 'AIzaSyDZaGdbRn7KV0ad2c7r4gOQDrrLbML3qKY'
+KEY = 'KEY'
 
 def print_and_log(m):
     print(m)
