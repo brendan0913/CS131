@@ -9,4 +9,4 @@ My programming projects at UCLA's 131 course, focusing on various programming la
 | Homework 4 (Prolog) | 100/100 |
 | Homework 5 (Scheme) | 100/100 |
 | Homework 6 (V) | 100/100 |
-| Project (Python) | 85/100 |
+| Project (Python) | 100/100 |
